@@ -61,46 +61,90 @@ export class ARApp {
   }
 
   async init() {
+    const debug = document.createElement("div");
+    debug.style.position = "absolute";
+    debug.style.bottom = "10px";
+    debug.style.left = "10px";
+    debug.style.color = "yellow";
+    debug.style.background = "rgba(0,0,0,0.7)";
+    debug.style.padding = "10px";
+    debug.style.zIndex = "9999";
+    debug.style.maxWidth = "300px";
+    debug.style.wordWrap = "break-word";
+    document.body.appendChild(debug);
+
+    const log = (msg: string) => {
+      debug.innerHTML += `<div>${msg}</div>`;
+      console.log(msg);
+    };
+
+    log("Initializing ARApp...");
+    log(`User UserAgent: ${navigator.userAgent}`);
+    log(`Is Secure Context: ${window.isSecureContext}`);
+
     if ("xr" in navigator) {
+      log("navigator.xr exists");
       const button = document.createElement("button");
       button.style.display = "none";
       document.body.appendChild(button);
 
-      const isArSupported =
-        await navigator.xr?.isSessionSupported("immersive-ar");
-      if (isArSupported) {
-        button.textContent = "ENTER AR";
-        button.style.display = "block";
-        button.className = "ar-button"; // logic moved to css
-        button.addEventListener("click", this.onButtonClicked.bind(this));
-      } else {
-        button.textContent = "AR NOT SUPPORTED";
-        button.style.display = "block";
-        button.disabled = true;
+      try {
+        const isArSupported =
+          await navigator.xr?.isSessionSupported("immersive-ar");
+        log(`isSessionSupported: ${isArSupported}`);
+
+        if (isArSupported) {
+          button.textContent = "ENTER AR";
+          button.style.display = "block";
+          button.className = "ar-button"; // logic moved to css
+          button.addEventListener("click", this.onButtonClicked.bind(this));
+          log("Button added");
+        } else {
+          button.textContent = "AR NOT SUPPORTED";
+          button.style.display = "block";
+          button.disabled = true;
+          log("AR not supported by browser");
+        }
+      } catch (e) {
+        log(`Error verifying AR support: ${e}`);
       }
     } else {
       const message = document.createElement("div");
       message.textContent = "WebXR not available";
+      message.style.color = "red";
+      message.style.fontSize = "20px";
+      message.style.marginTop = "20px";
       document.body.appendChild(message);
+      log("navigator.xr DOEST NOT exist (WebXR unavailable)");
+
+      if (!window.isSecureContext) {
+        log(
+          'ERROR: Not a secure context (HTTPS required). If testing on local IP, enable "Insecure origins treated as secure" in chrome://flags',
+        );
+      }
     }
   }
 
   private async onButtonClicked() {
     if (!this.session) {
-      const session = await navigator.xr!.requestSession("immersive-ar", {
-        requiredFeatures: ["hit-test"],
-      });
-      session.addEventListener("end", () => {
-        this.session = null;
-        this.hitTestSource = null;
-        this.hitTestSourceRequested = false;
-      });
+      try {
+        const session = await navigator.xr!.requestSession("immersive-ar", {
+          requiredFeatures: ["hit-test"],
+        });
+        session.addEventListener("end", () => {
+          this.session = null;
+          this.hitTestSource = null;
+          this.hitTestSourceRequested = false;
+        });
 
-      this.renderer.xr.setReferenceSpaceType("local");
-      await this.renderer.xr.setSession(session);
-      this.session = session;
+        this.renderer.xr.setReferenceSpaceType("local");
+        await this.renderer.xr.setSession(session);
+        this.session = session;
 
-      this.renderer.setAnimationLoop(this.render.bind(this));
+        this.renderer.setAnimationLoop(this.render.bind(this));
+      } catch (e) {
+        alert(`Failed to start AR session: ${e}`);
+      }
     }
   }
 
