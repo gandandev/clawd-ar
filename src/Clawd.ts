@@ -47,17 +47,6 @@ export class Clawd {
     const legD = 0.15;
     const legGeo = new THREE.BoxGeometry(legW, legH, legD);
 
-    const legPositions = [
-      { x: -0.4, z: 0 },
-      { x: -0.15, z: 0 }, // Wait, image shows 3 'teeth' or legs?
-      // Looking at image 1: 2 legs on sides? Or are those teeth?
-      // Looking at image 2 (sticker): It has "feet" sticking down. 2 on sides, maybe gap in middle?
-      // Image 1 (3D print): 4 distinct legs/feet visible at the bottom.
-      // Let's do 4 legs.
-      { x: 0.15, z: 0 },
-      { x: 0.4, z: 0 },
-    ];
-
     // Readjusting legs based on Image 1 (Red block with 4 legs)
     // They are spaced out.
     // Let's place them evenly.

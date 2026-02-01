@@ -10,7 +10,6 @@ export class ARApp {
   private hitTestSource: XRHitTestSource | null = null;
   private hitTestSourceRequested = false;
   private clawd: Clawd;
-  private clawdPlaced = false;
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -122,7 +121,6 @@ export class ARApp {
       this.clawd.mesh.scale.set(0.2, 0.2, 0.2);
 
       this.clawd.mesh.visible = true;
-      this.clawdPlaced = true;
     }
   }
 
@@ -132,7 +130,7 @@ export class ARApp {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  private render(timestamp: number, frame: XRFrame) {
+  private render(_timestamp: number, frame: XRFrame) {
     if (frame) {
       const referenceSpace = this.renderer.xr.getReferenceSpace();
       const session = this.renderer.xr.getSession();
